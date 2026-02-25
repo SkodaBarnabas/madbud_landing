@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MadBud.dk — Smart Packaging, Local Advertising</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: linear-gradient(145deg, #0D1117 0%, #161B22 50%, #1A1F2B 100%);
+    font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+    color: #E6EDF3;
+    padding: 32px 20px;
+    overflow-x: hidden;
+  }
+  body.rtl { direction: rtl; font-family: 'Segoe UI', 'Tahoma', 'Arial', sans-serif; }
+
+  /* Language Switcher */
+  .lang-bar { display: flex; justify-content: center; gap: 6px; margin-bottom: 24px; flex-wrap: wrap; }
+  .lang-btn {
+    padding: 7px 14px; border-radius: 10px; border: 2px solid #30363D;
+    background: rgba(22,27,34,0.8); color: #8B949E; cursor: pointer;
+    font-size: 13px; font-weight: 600; transition: all 0.2s ease;
+  }
+  .lang-btn.active { border-color: #F7B731; background: rgba(247,183,49,0.15); color: #F7B731; }
+
+  /* Header */
+  .header { text-align: center; margin-bottom: 36px; }
+  .badge {
+    display: inline-block; background: linear-gradient(135deg, #F7B731, #F5A623);
+    border-radius: 16px; padding: 6px 20px; margin-bottom: 12px;
+    box-shadow: 0 4px 20px rgba(247,183,49,0.3);
+    font-size: 13px; font-weight: 700; color: #1A1F2B; letter-spacing: 2px; text-transform: uppercase;
+  }
+  .tagline {
+    font-size: clamp(26px, 5vw, 38px); font-weight: 800; margin: 8px 0 6px;
+    background: linear-gradient(90deg, #F7B731, #F5A623, #E8971E);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; line-height: 1.25; white-space: pre-line;
+  }
+  .subtitle { font-size: 15px; color: #8B949E; max-width: 520px; margin: 0 auto; line-height: 1.5; }
+
+  /* Tabs */
+  .tab-bar { display: flex; justify-content: center; gap: 6px; margin-bottom: 28px; flex-wrap: wrap; }
+  .tab-btn {
+    padding: 9px 14px; border-radius: 12px; border: 2px solid #30363D;
+    background: rgba(22,27,34,0.8); color: #8B949E; cursor: pointer;
+    font-size: 12px; font-weight: 600; transition: all 0.25s ease; white-space: nowrap;
+  }
+  .tab-btn.active {
+    border-color: #F7B731;
+    background: linear-gradient(135deg, rgba(247,183,49,0.15), rgba(245,166,35,0.08));
+    color: #F7B731;
+  }
+
+  /* Content */
+  .content { max-width: 720px; margin: 0 auto; }
+  .view { animation: fadeIn 0.4s ease; }
+  .hidden { display: none; }
+
+  /* Cards */
+  .card {
+    border-radius: 20px; padding: 28px;
+  }
+  .card-blue { background: linear-gradient(135deg, rgba(52,152,219,0.08), transparent); border: 2px solid rgba(52,152,219,0.25); }
+  .card-green { background: linear-gradient(135deg, rgba(39,174,96,0.08), transparent); border: 2px solid rgba(39,174,96,0.25); }
+  .card-yellow { background: linear-gradient(135deg, rgba(247,183,49,0.08), transparent); border: 2px solid rgba(247,183,49,0.25); }
+  .card-orange { background: linear-gradient(135deg, rgba(230,126,34,0.08), transparent); border: 2px solid rgba(230,126,34,0.25); }
+
+  /* Overview flow */
+  .flow { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .flow-box {
+    border-radius: 20px; padding: 24px 32px; text-align: center; width: 100%; max-width: 400px;
+  }
+  .flow-box.gold { background: linear-gradient(135deg, rgba(247,183,49,0.12), rgba(247,183,49,0.04)); border: 2px solid rgba(247,183,49,0.4); }
+  .flow-box.blue { background: linear-gradient(135deg, rgba(52,152,219,0.12), rgba(52,152,219,0.04)); border: 2px solid rgba(52,152,219,0.35); }
+  .flow-box.green { background: linear-gradient(135deg, rgba(39,174,96,0.12), rgba(39,174,96,0.04)); border: 2px solid rgba(39,174,96,0.35); }
+  .flow-box.purple { background: linear-gradient(135deg, rgba(155,89,182,0.12), rgba(155,89,182,0.04)); border: 2px solid rgba(155,89,182,0.35); }
+
+  .flow-row { display: flex; gap: 20px; width: 100%; justify-content: center; flex-wrap: wrap; }
+  .flow-half { flex: 1 1 200px; max-width: 300px; border-radius: 20px; padding: 20px 24px; text-align: center; }
+  .arrows-row { display: flex; justify-content: center; align-items: center; gap: 120px; }
+  .arrow-col { display: flex; flex-direction: column; align-items: center; }
+
+  /* Win strip */
+  .win-strip {
+    margin-top: 28px; background: rgba(247,183,49,0.06); border: 1px solid rgba(247,183,49,0.2);
+    border-radius: 14px; padding: 18px 20px; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 12px;
+  }
+  .win-item { text-align: center; flex: 1 1 130px; }
+
+  /* Before/After */
+  .compare { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+  .compare-box {
+    flex: 1 1 200px; border-radius: 14px; padding: 18px; text-align: center;
+  }
+  .compare-box.red { background: rgba(231,76,60,0.08); border: 1px solid rgba(231,76,60,0.25); }
+  .compare-box.green { background: rgba(39,174,96,0.08); border: 1px solid rgba(39,174,96,0.25); }
+
+  /* Check items */
+  .check-list { background: rgba(52,152,219,0.06); border-radius: 12px; padding: 16px; }
+  .check-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .check-item span { font-size: 13px; color: #C9D1D9; }
+
+  /* Moment box */
+  .moment-box {
+    background: rgba(39,174,96,0.06); border-radius: 16px; padding: 20px;
+    text-align: center; margin-bottom: 20px; border: 1px dashed rgba(39,174,96,0.3);
+  }
+
+  /* Ideal biz tags */
+  .biz-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .biz-tag {
+    background: rgba(247,183,49,0.1); border: 1px solid rgba(247,183,49,0.25);
+    border-radius: 8px; padding: 4px 10px; font-size: 11px; color: #F7B731; font-weight: 600;
+  }
+  .ideal-box {
+    margin-top: 16px; background: rgba(247,183,49,0.06); border-radius: 12px;
+    padding: 14px; border: 1px solid rgba(247,183,49,0.2);
+  }
+
+  /* Products */
+  .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 28px; }
+  .product-card {
+    background: rgba(230,126,34,0.05); border: 1px solid rgba(230,126,34,0.2);
+    border-radius: 16px; padding: 20px;
+  }
+  .product-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .product-tag {
+    background: rgba(230,126,34,0.08); border: 1px solid rgba(230,126,34,0.18);
+    border-radius: 6px; padding: 3px 8px; font-size: 10px; color: #E67E22; font-weight: 600;
+  }
+  .gallery-wrap {
+    background: rgba(247,183,49,0.04); border: 1px solid rgba(247,183,49,0.15);
+    border-radius: 16px; padding: 20px;
+  }
+  .gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+  .gallery-item {
+    background: linear-gradient(135deg, rgba(22,27,34,0.9), rgba(30,36,44,0.9));
+    border: 1px solid #30363D; border-radius: 14px; padding: 18px 14px; text-align: center;
+  }
+  .gallery-icon {
+    width: 64px; height: 64px;
+    background: linear-gradient(135deg, rgba(247,183,49,0.1), rgba(230,126,34,0.1));
+    border-radius: 14px; display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 10px; font-size: 28px; border: 1px dashed rgba(247,183,49,0.25);
+  }
+
+  /* Trust box */
+  .trust-box {
+    margin-top: 18px; background: rgba(155,89,182,0.06); border: 1px solid rgba(155,89,182,0.2);
+    border-radius: 12px; padding: 14px; text-align: center;
+  }
+
+  /* Footer */
+  .footer { text-align: center; margin-top: 36px; }
+  .cta-btn {
+    display: inline-block; background: linear-gradient(135deg, #F7B731, #E8971E);
+    border-radius: 14px; padding: 14px 32px; box-shadow: 0 6px 24px rgba(247,183,49,0.3);
+    font-size: 15px; font-weight: 700; color: #1A1F2B; border: none; cursor: pointer;
+  }
+
+  /* SVG icons inline */
+  .icon-check, .icon-cross { flex-shrink: 0; width: 18px; height: 18px; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+<script>
+const T = {
+  en: {
+    flag: "🇬🇧", label: "English",
+    tagline: "Smart Packaging.\nLocal Advertising.",
+    subtitle: "Pizza boxes & food packaging with built-in local ads — everyone wins.",
+    tabs: { overview: "How It Works", restaurant: "For Restaurants", advertiser: "For Advertisers", products: "Our Products", rules: "Our Ethics" },
+    overview: {
+      centerDesc: "Produces pizza boxes & food packaging\nwith local ads printed inside",
+      arrowLeft: "CHEAPER BOXES", arrowRight: "AD REVENUE",
+      restaurantTitle: "Restaurant",
+      restaurantDesc: ["Gets ", "cheaper packaging", " because ad revenue subsidizes the cost"],
+      advertiserTitle: "Local Advertiser",
+      advertiserDesc: ["Gets ", "hyper-local exposure", " to hungry customers in their neighborhood"],
+      customerTitle: "End Customer",
+      customerDesc: ["Opens box → discovers ", "useful local offers", " (gym, salon, bakery...)"],
+      winWin: [
+        { emoji: "🍕", text: "Restaurants save money" },
+        { emoji: "📢", text: "Advertisers reach locals" },
+        { emoji: "📦", text: "MadBud.dk earns ad revenue" },
+      ],
+    },
+    restaurant: {
+      title: "🍕 For Your Restaurant",
+      subtitle: "The same quality packaging you already buy — but at a lower price.",
+      before: "BEFORE", after: "WITH MADBUD",
+      beforeLabel: "Full Price", beforeDesc: "Standard blank packaging",
+      afterLabel: "Cheaper!", afterDesc: "Ad-subsidized packaging",
+      whyTitle: "WHY RESTAURANTS LOVE IT:",
+      whyItems: ["Same quality pizza boxes & food wrapping","Lower cost — ads pay part of the price","No competitor ads — only complementary local businesses","Customers discover cool local spots — adds value","No extra work for your staff"],
+    },
+    advertiser: {
+      title: "📢 For Local Advertisers",
+      subtitle: "Reach real, nearby customers at the perfect moment — when they're relaxed and eating.",
+      momentTitle: 'The "Open Box" Moment',
+      momentDesc: "Customer opens pizza → sees your ad inside the lid → guaranteed attention",
+      whyTitle: "WHY LOCAL BUSINESSES LOVE IT:",
+      whyItems: ["Hyper-local targeting — your actual neighborhood","Captive audience — people sit and eat for 20+ min","Affordable ad rates for small businesses","Physical ad — no ad blockers, no scrolling past","Ethical: only non-competing, local businesses allowed"],
+      idealTitle: "💡 IDEAL ADVERTISERS:",
+      idealBiz: ["Hair Salons","Gyms","Auto Repair","Dentists","Pet Shops","Florists","Tutoring","Yoga Studios"],
+    },
+    products: {
+      title: "📸 Our Products",
+      subtitle: "High-quality pizza boxes and food packaging — with smart ad space inside.",
+      categories: [
+        { name: "Pizza Boxes", emoji: "🍕", desc: "Classic & custom sizes with full-color interior ad panels", items: ["Small (26cm)","Medium (32cm)","Large (40cm)","Family (50cm)"] },
+        { name: "Burger & Wrap Boxes", emoji: "🍔", desc: "Sturdy clamshell packaging with ad space on the lid interior", items: ["Burger Box","Wrap Box","Snack Box","Meal Box"] },
+        { name: "Paper Bags & Wraps", emoji: "🥡", desc: "Grease-proof paper wraps and bags with printed local ads", items: ["Sandwich Wrap","Fry Bags","Takeaway Bags","Deli Paper"] },
+        { name: "Custom Solutions", emoji: "✨", desc: "Bespoke packaging designed for your brand with ad integration", items: ["Custom Print","Brand Colors","Special Sizes","Eco Materials"] },
+      ],
+      galleryTitle: "How It Looks",
+      galleryItems: [
+        { emoji: "📦", label: "Box Exterior", desc: "Clean, professional branding for the restaurant" },
+        { emoji: "📰", label: "Ad Inside Lid", desc: "Full-color local ad visible when the box opens" },
+        { emoji: "🎯", label: "QR & Coupons", desc: "Trackable QR codes and discount coupons" },
+        { emoji: "♻️", label: "Eco-Friendly", desc: "100% recyclable, FSC-certified materials" },
+      ],
+    },
+    rules: {
+      title: "✅ Our Ethical Ad Policy",
+      subtitle: "We protect restaurants and keep advertising fair, relevant, and local.",
+      allowTitle: "✅ WE ALLOW:",
+      allowItems: ["Local businesses within the delivery area","Non-competing categories (no other food businesses)","Family-friendly, ethical products & services","Businesses that add value to the community"],
+      denyTitle: "❌ WE NEVER ALLOW:",
+      denyItems: ["Competing restaurants or food businesses","National chains or non-local companies","Inappropriate or offensive content","Gambling, alcohol, or tobacco advertising"],
+      trustQuote: '"We build trust between restaurants, advertisers & communities."',
+    },
+    cta: "🟢 Let's Talk — info@madbud.dk",
+    footer: "MadBud.dk © 2026 — Smart Packaging, Smarter Advertising",
+  },
+  da: {
+    flag: "🇩🇰", label: "Dansk",
+    tagline: "Smart Emballage.\nLokal Annoncering.",
+    subtitle: "Pizzabakker & fødevareemballage med lokale annoncer indeni — alle vinder.",
+    tabs: { overview: "Sådan Virker Det", restaurant: "For Restauranter", advertiser: "For Annoncører", products: "Vores Produkter", rules: "Vores Etik" },
+    overview: {
+      centerDesc: "Producerer pizzabakker & fødevareemballage\nmed lokale annoncer trykt indeni",
+      arrowLeft: "BILLIGERE BAKKER", arrowRight: "ANNONCEINDTÆGT",
+      restaurantTitle: "Restaurant",
+      restaurantDesc: ["Får ","billigere emballage"," fordi annonceindtægter subsidierer prisen"],
+      advertiserTitle: "Lokal Annoncør",
+      advertiserDesc: ["Får ","hyper-lokal synlighed"," hos sultne kunder i nabolaget"],
+      customerTitle: "Slutkunde",
+      customerDesc: ["Åbner kassen → opdager ","nyttige lokale tilbud"," (fitnesscenter, salon, bageri...)"],
+      winWin: [{ emoji: "🍕", text: "Restauranter sparer penge" },{ emoji: "📢", text: "Annoncører når lokale" },{ emoji: "📦", text: "MadBud.dk tjener annonceindtægt" }],
+    },
+    restaurant: {
+      title: "🍕 For Din Restaurant", subtitle: "Samme kvalitetsemballage som du allerede køber — bare til en lavere pris.",
+      before: "FØR", after: "MED MADBUD", beforeLabel: "Fuld Pris", beforeDesc: "Standard blank emballage",
+      afterLabel: "Billigere!", afterDesc: "Annonce-subsidieret emballage",
+      whyTitle: "HVORFOR RESTAURANTER ELSKER DET:",
+      whyItems: ["Samme kvalitet pizzabakker & fødevareemballage","Lavere pris — annoncer betaler en del","Ingen konkurrent-annoncer — kun komplementære lokale virksomheder","Kunder opdager fede lokale steder — tilføjer værdi","Intet ekstra arbejde for dit personale"],
+    },
+    advertiser: {
+      title: "📢 For Lokale Annoncører", subtitle: "Nå rigtige, nærliggende kunder på det perfekte tidspunkt — når de er afslappede og spiser.",
+      momentTitle: 'Det "Åbn Kassen" Øjeblik', momentDesc: "Kunden åbner pizza → ser din annonce i låget → garanteret opmærksomhed",
+      whyTitle: "HVORFOR LOKALE VIRKSOMHEDER ELSKER DET:",
+      whyItems: ["Hyper-lokal målretning — dit faktiske nabolag","Fangen målgruppe — folk sidder og spiser i 20+ min","Overkommelige annoncepriser for små virksomheder","Fysisk annonce — ingen ad-blockere, ingen scrolling forbi","Etisk: kun ikke-konkurrerende, lokale virksomheder tilladt"],
+      idealTitle: "💡 IDEELLE ANNONCØRER:",
+      idealBiz: ["Frisører","Fitnesscentre","Autoværksted","Tandlæger","Dyrebutikker","Blomsterhandlere","Undervisning","Yoga Studios"],
+    },
+    products: {
+      title: "📸 Vores Produkter", subtitle: "Pizzabakker og fødevareemballage i høj kvalitet — med smart annonceplads indeni.",
+      categories: [
+        { name: "Pizzabakker", emoji: "🍕", desc: "Klassiske & tilpassede størrelser med fuldfarvede annoncepaneler indeni", items: ["Lille (26cm)","Medium (32cm)","Stor (40cm)","Familie (50cm)"] },
+        { name: "Burger- & Wrapkasser", emoji: "🍔", desc: "Robust clamshell-emballage med annonceplads i låget", items: ["Burgerboks","Wrapboks","Snackboks","Måltidsboks"] },
+        { name: "Papirposer & Indpakning", emoji: "🥡", desc: "Fedtafvisende papirindpakning og poser med trykte lokale annoncer", items: ["Sandwichpapir","Pomfritposer","Takeaway-poser","Delipapir"] },
+        { name: "Skræddersyede Løsninger", emoji: "✨", desc: "Specialdesignet emballage til dit brand med annonceintegration", items: ["Eget Tryk","Brandfarver","Specialstørrelser","Øko-materialer"] },
+      ],
+      galleryTitle: "Sådan Ser Det Ud",
+      galleryItems: [
+        { emoji: "📦", label: "Kasse Ydre", desc: "Rent, professionelt branding for restauranten" },
+        { emoji: "📰", label: "Annonce i Låget", desc: "Fuldfarvede lokale annoncer synlige når kassen åbnes" },
+        { emoji: "🎯", label: "QR & Kuponer", desc: "Sporbare QR-koder og rabatkuponer" },
+        { emoji: "♻️", label: "Miljøvenlig", desc: "100% genanvendelig, FSC-certificerede materialer" },
+      ],
+    },
+    rules: {
+      title: "✅ Vores Etiske Annoncepolitik", subtitle: "Vi beskytter restauranter og holder annoncering fair, relevant og lokal.",
+      allowTitle: "✅ VI TILLADER:", allowItems: ["Lokale virksomheder inden for leveringsområdet","Ikke-konkurrerende kategorier (ingen andre fødevarevirksomheder)","Familievenlige, etiske produkter & tjenester","Virksomheder der tilføjer værdi til lokalsamfundet"],
+      denyTitle: "❌ VI TILLADER ALDRIG:", denyItems: ["Konkurrerende restauranter eller fødevarevirksomheder","Nationale kæder eller ikke-lokale firmaer","Upassende eller stødende indhold","Gambling-, alkohol- eller tobaksannoncering"],
+      trustQuote: '"Vi bygger tillid mellem restauranter, annoncører & lokalsamfund."',
+    },
+    cta: "🟢 Lad os snakke — info@madbud.dk",
+    footer: "MadBud.dk © 2026 — Smart Emballage, Smartere Annoncering",
+  },
+  de: {
+    flag: "🇩🇪", label: "Deutsch",
+    tagline: "Smarte Verpackung.\nLokale Werbung.",
+    subtitle: "Pizzakartons & Lebensmittelverpackungen mit lokaler Werbung innen — alle gewinnen.",
+    tabs: { overview: "So Funktioniert's", restaurant: "Für Restaurants", advertiser: "Für Werbetreibende", products: "Unsere Produkte", rules: "Unsere Ethik" },
+    overview: {
+      centerDesc: "Produziert Pizzakartons & Lebensmittelverpackungen\nmit lokaler Werbung innen bedruckt",
+      arrowLeft: "GÜNSTIGERE KARTONS", arrowRight: "WERBEEINNAHMEN",
+      restaurantTitle: "Restaurant",
+      restaurantDesc: ["Bekommt ","günstigere Verpackung"," weil Werbeeinnahmen die Kosten subventionieren"],
+      advertiserTitle: "Lokaler Werbetreibender",
+      advertiserDesc: ["Bekommt ","hyper-lokale Sichtbarkeit"," bei hungrigen Kunden in der Nachbarschaft"],
+      customerTitle: "Endkunde",
+      customerDesc: ["Öffnet Karton → entdeckt ","nützliche lokale Angebote"," (Fitnessstudio, Salon, Bäckerei...)"],
+      winWin: [{ emoji: "🍕", text: "Restaurants sparen Geld" },{ emoji: "📢", text: "Werbetreibende erreichen Lokale" },{ emoji: "📦", text: "MadBud.dk verdient Werbeeinnahmen" }],
+    },
+    restaurant: {
+      title: "🍕 Für Ihr Restaurant", subtitle: "Die gleiche Qualitätsverpackung, die Sie bereits kaufen — nur günstiger.",
+      before: "VORHER", after: "MIT MADBUD", beforeLabel: "Voller Preis", beforeDesc: "Standard-Blankoverpackung",
+      afterLabel: "Günstiger!", afterDesc: "Werbe-subventionierte Verpackung",
+      whyTitle: "WARUM RESTAURANTS ES LIEBEN:",
+      whyItems: ["Gleiche Qualität Pizzakartons & Lebensmittelverpackung","Niedrigere Kosten — Werbung zahlt einen Teil","Keine Konkurrenz-Werbung — nur ergänzende lokale Unternehmen","Kunden entdecken coole lokale Orte — Mehrwert","Kein zusätzlicher Aufwand für Ihr Personal"],
+    },
+    advertiser: {
+      title: "📢 Für Lokale Werbetreibende", subtitle: "Erreichen Sie echte, nahegelegene Kunden im perfekten Moment — wenn sie entspannt essen.",
+      momentTitle: 'Der „Karton Öffnen" Moment', momentDesc: "Kunde öffnet Pizza → sieht Ihre Werbung im Deckel → garantierte Aufmerksamkeit",
+      whyTitle: "WARUM LOKALE UNTERNEHMEN ES LIEBEN:",
+      whyItems: ["Hyper-lokales Targeting — Ihre tatsächliche Nachbarschaft","Gefangenes Publikum — Menschen essen 20+ Minuten lang","Bezahlbare Werbepreise für kleine Unternehmen","Physische Werbung — keine Ad-Blocker, kein Vorbeiscrollen","Ethisch: nur nicht-konkurrierende, lokale Unternehmen erlaubt"],
+      idealTitle: "💡 IDEALE WERBETREIBENDE:",
+      idealBiz: ["Friseure","Fitnessstudios","Autowerkstätten","Zahnärzte","Tierhandlungen","Blumenläden","Nachhilfe","Yoga Studios"],
+    },
+    products: {
+      title: "📸 Unsere Produkte", subtitle: "Hochwertige Pizzakartons und Lebensmittelverpackungen — mit smartem Werbeplatz innen.",
+      categories: [
+        { name: "Pizzakartons", emoji: "🍕", desc: "Klassische & individuelle Größen mit vollfarbigen Werbe-Innenpanelen", items: ["Klein (26cm)","Mittel (32cm)","Groß (40cm)","Familie (50cm)"] },
+        { name: "Burger- & Wrapboxen", emoji: "🍔", desc: "Robuste Clamshell-Verpackung mit Werbeplatz im Deckel", items: ["Burgerbox","Wrapbox","Snackbox","Menübox"] },
+        { name: "Papiertüten & Wickel", emoji: "🥡", desc: "Fettbeständige Papierwickel und Tüten mit lokaler Werbung", items: ["Sandwichpapier","Pommestüten","Takeaway-Tüten","Delipapier"] },
+        { name: "Individuelle Lösungen", emoji: "✨", desc: "Maßgeschneiderte Verpackungen für Ihre Marke mit Werbeintegration", items: ["Eigener Druck","Markenfarben","Sondergrößen","Öko-Materialien"] },
+      ],
+      galleryTitle: "So Sieht Es Aus",
+      galleryItems: [
+        { emoji: "📦", label: "Karton Außen", desc: "Sauberes, professionelles Branding für das Restaurant" },
+        { emoji: "📰", label: "Werbung im Deckel", desc: "Vollfarbige lokale Werbung sichtbar beim Öffnen" },
+        { emoji: "🎯", label: "QR & Gutscheine", desc: "Nachverfolgbare QR-Codes und Rabattgutscheine" },
+        { emoji: "♻️", label: "Umweltfreundlich", desc: "100% recyclebar, FSC-zertifizierte Materialien" },
+      ],
+    },
+    rules: {
+      title: "✅ Unsere Ethische Werbepolitik", subtitle: "Wir schützen Restaurants und halten Werbung fair, relevant und lokal.",
+      allowTitle: "✅ WIR ERLAUBEN:", allowItems: ["Lokale Unternehmen im Liefergebiet","Nicht-konkurrierende Kategorien (keine anderen Lebensmittelunternehmen)","Familienfreundliche, ethische Produkte & Dienstleistungen","Unternehmen, die der Gemeinschaft Mehrwert bieten"],
+      denyTitle: "❌ WIR ERLAUBEN NIE:", denyItems: ["Konkurrierende Restaurants oder Lebensmittelunternehmen","Nationale Ketten oder nicht-lokale Unternehmen","Unangemessene oder anstößige Inhalte","Glücksspiel-, Alkohol- oder Tabakwerbung"],
+      trustQuote: '"Wir bauen Vertrauen zwischen Restaurants, Werbetreibenden & Gemeinschaften auf."',
+    },
+    cta: "🟢 Sprechen wir — info@madbud.dk",
+    footer: "MadBud.dk © 2026 — Smarte Verpackung, Smartere Werbung",
+  },
+  ar: {
+    flag: "🇸🇦", label: "العربية", rtl: true,
+    tagline: "تغليف ذكي.\nإعلانات محلية.",
+    subtitle: "علب البيتزا وتغليف الطعام مع إعلانات محلية بالداخل — الجميع يفوز.",
+    tabs: { overview: "كيف يعمل", restaurant: "للمطاعم", advertiser: "للمعلنين", products: "منتجاتنا", rules: "أخلاقياتنا" },
+    overview: {
+      centerDesc: "ينتج علب بيتزا وتغليف طعام\nمع إعلانات محلية مطبوعة بالداخل",
+      arrowLeft: "علب أرخص", arrowRight: "إيرادات الإعلانات",
+      restaurantTitle: "المطعم",
+      restaurantDesc: ["يحصل على ","تغليف أرخص"," لأن إيرادات الإعلانات تدعم التكلفة"],
+      advertiserTitle: "المعلن المحلي",
+      advertiserDesc: ["يحصل على ","ظهور محلي فائق"," للعملاء الجائعين في الحي"],
+      customerTitle: "العميل النهائي",
+      customerDesc: ["يفتح العلبة ← يكتشف ","عروض محلية مفيدة"," (صالة رياضة، صالون، مخبز...)"],
+      winWin: [{ emoji: "🍕", text: "المطاعم توفر المال" },{ emoji: "📢", text: "المعلنون يصلون للمحليين" },{ emoji: "📦", text: "MadBud.dk يكسب إيرادات الإعلانات" }],
+    },
+    restaurant: {
+      title: "🍕 لمطعمك", subtitle: "نفس جودة التغليف التي تشتريها بالفعل — لكن بسعر أقل.",
+      before: "قبل", after: "مع MADBUD", beforeLabel: "السعر الكامل", beforeDesc: "تغليف عادي فارغ",
+      afterLabel: "أرخص!", afterDesc: "تغليف مدعوم بالإعلانات",
+      whyTitle: "لماذا تحب المطاعم ذلك:",
+      whyItems: ["نفس جودة علب البيتزا وتغليف الطعام","تكلفة أقل — الإعلانات تدفع جزءاً من السعر","لا إعلانات منافسة — فقط أعمال محلية مكملة","العملاء يكتشفون أماكن محلية رائعة — قيمة مضافة","لا عمل إضافي لطاقمك"],
+    },
+    advertiser: {
+      title: "📢 للمعلنين المحليين", subtitle: "اوصل لعملاء حقيقيين قريبين في اللحظة المثالية — عندما يكونون مسترخين ويأكلون.",
+      momentTitle: 'لحظة "فتح العلبة"', momentDesc: "العميل يفتح البيتزا ← يرى إعلانك في الغطاء ← انتباه مضمون",
+      whyTitle: "لماذا تحب الشركات المحلية ذلك:",
+      whyItems: ["استهداف محلي فائق — حيّك الفعلي","جمهور أسير — الناس يجلسون ويأكلون لأكثر من 20 دقيقة","أسعار إعلانات معقولة للشركات الصغيرة","إعلان مادي — لا حاصرات إعلانات، لا تمرير","أخلاقي: فقط أعمال محلية غير منافسة مسموحة"],
+      idealTitle: "💡 المعلنون المثاليون:",
+      idealBiz: ["صالونات تجميل","صالات رياضة","ورش سيارات","أطباء أسنان","متاجر حيوانات","بائعي زهور","دروس خصوصية","استوديوهات يوغا"],
+    },
+    products: {
+      title: "📸 منتجاتنا", subtitle: "علب بيتزا وتغليف طعام عالي الجودة — مع مساحة إعلانية ذكية بالداخل.",
+      categories: [
+        { name: "علب البيتزا", emoji: "🍕", desc: "أحجام كلاسيكية ومخصصة مع لوحات إعلانية بالألوان الكاملة", items: ["صغيرة (26سم)","متوسطة (32سم)","كبيرة (40سم)","عائلية (50سم)"] },
+        { name: "علب البرغر واللفائف", emoji: "🍔", desc: "تغليف متين مع مساحة إعلانية في الغطاء", items: ["علبة برغر","علبة لفائف","علبة سناك","علبة وجبة"] },
+        { name: "أكياس ولفائف ورقية", emoji: "🥡", desc: "لفائف وأكياس ورقية مقاومة للدهون مع إعلانات محلية", items: ["ورق ساندويتش","أكياس بطاطس","أكياس تيك أوي","ورق ديلي"] },
+        { name: "حلول مخصصة", emoji: "✨", desc: "تغليف مصمم خصيصاً لعلامتك التجارية مع دمج الإعلانات", items: ["طباعة مخصصة","ألوان العلامة","أحجام خاصة","مواد صديقة للبيئة"] },
+      ],
+      galleryTitle: "كيف يبدو",
+      galleryItems: [
+        { emoji: "📦", label: "العلبة من الخارج", desc: "تصميم نظيف واحترافي للمطعم" },
+        { emoji: "📰", label: "إعلان في الغطاء", desc: "إعلان محلي بالألوان الكاملة عند فتح العلبة" },
+        { emoji: "🎯", label: "QR وكوبونات", desc: "رموز QR قابلة للتتبع وكوبونات خصم" },
+        { emoji: "♻️", label: "صديق للبيئة", desc: "قابل لإعادة التدوير 100%، مواد معتمدة FSC" },
+      ],
+    },
+    rules: {
+      title: "✅ سياسة الإعلانات الأخلاقية", subtitle: "نحمي المطاعم ونحافظ على إعلانات عادلة وذات صلة ومحلية.",
+      allowTitle: "✅ نسمح بـ:", allowItems: ["أعمال محلية ضمن منطقة التوصيل","فئات غير منافسة (لا شركات طعام أخرى)","منتجات وخدمات أخلاقية ومناسبة للعائلة","أعمال تضيف قيمة للمجتمع"],
+      denyTitle: "❌ لا نسمح أبداً بـ:", denyItems: ["مطاعم أو شركات طعام منافسة","سلاسل وطنية أو شركات غير محلية","محتوى غير لائق أو مسيء","إعلانات القمار أو الكحول أو التبغ"],
+      trustQuote: '"نبني الثقة بين المطاعم والمعلنين والمجتمعات."',
+    },
+    cta: "🟢 لنتحدث — info@madbud.dk",
+    footer: "MadBud.dk © 2026 — تغليف ذكي، إعلانات أذكى",
+  },
+  tr: {
+    flag: "🇹🇷", label: "Türkçe",
+    tagline: "Akıllı Ambalaj.\nYerel Reklam.",
+    subtitle: "İçinde yerel reklamlar bulunan pizza kutuları ve gıda ambalajları — herkes kazanır.",
+    tabs: { overview: "Nasıl Çalışır", restaurant: "Restoranlar İçin", advertiser: "Reklamverenler İçin", products: "Ürünlerimiz", rules: "Etik Kurallarımız" },
+    overview: {
+      centerDesc: "İçine yerel reklamlar basılmış\npizza kutuları ve gıda ambalajları üretir",
+      arrowLeft: "DAHA UCUZ KUTULAR", arrowRight: "REKLAM GELİRİ",
+      restaurantTitle: "Restoran",
+      restaurantDesc: ["Reklam gelirleri maliyeti sübvanse ettiği için ","daha ucuz ambalaj"," alır"],
+      advertiserTitle: "Yerel Reklamveren",
+      advertiserDesc: ["Mahallede aç müşterilere ","hiper-yerel görünürlük"," kazanır"],
+      customerTitle: "Son Müşteri",
+      customerDesc: ["Kutuyu açar → ","faydalı yerel teklifler"," keşfeder (spor salonu, kuaför, fırın...)"],
+      winWin: [{ emoji: "🍕", text: "Restoranlar tasarruf eder" },{ emoji: "📢", text: "Reklamverenler yerellere ulaşır" },{ emoji: "📦", text: "MadBud.dk reklam geliri kazanır" }],
+    },
+    restaurant: {
+      title: "🍕 Restoranınız İçin", subtitle: "Zaten aldığınız kalitede ambalaj — ama daha düşük fiyata.",
+      before: "ÖNCE", after: "MADBUD İLE", beforeLabel: "Tam Fiyat", beforeDesc: "Standart boş ambalaj",
+      afterLabel: "Daha Ucuz!", afterDesc: "Reklam destekli ambalaj",
+      whyTitle: "RESTORANLAR NEDEN SEVİYOR:",
+      whyItems: ["Aynı kalite pizza kutuları ve gıda ambalajı","Daha düşük maliyet — reklamlar fiyatın bir kısmını karşılar","Rakip reklamı yok — sadece tamamlayıcı yerel işletmeler","Müşteriler harika yerel mekanlar keşfeder — değer katar","Personeliniz için ekstra iş yok"],
+    },
+    advertiser: {
+      title: "📢 Yerel Reklamverenler İçin", subtitle: "Gerçek, yakındaki müşterilere mükemmel anda ulaşın — rahatça yemek yerken.",
+      momentTitle: '"Kutu Açma" Anı', momentDesc: "Müşteri pizzayı açar → kapakta reklamınızı görür → garantili dikkat",
+      whyTitle: "YEREL İŞLETMELER NEDEN SEVİYOR:",
+      whyItems: ["Hiper-yerel hedefleme — gerçek mahalleniz","Esir kitle — insanlar 20+ dakika oturup yemek yer","Küçük işletmeler için uygun reklam fiyatları","Fiziksel reklam — reklam engelleyici yok, kaydırma yok","Etik: sadece rakip olmayan, yerel işletmelere izin verilir"],
+      idealTitle: "💡 İDEAL REKLAMVERENLER:",
+      idealBiz: ["Kuaförler","Spor Salonları","Oto Tamir","Diş Hekimleri","Pet Shoplar","Çiçekçiler","Özel Ders","Yoga Stüdyoları"],
+    },
+    products: {
+      title: "📸 Ürünlerimiz", subtitle: "Yüksek kaliteli pizza kutuları ve gıda ambalajları — içinde akıllı reklam alanı ile.",
+      categories: [
+        { name: "Pizza Kutuları", emoji: "🍕", desc: "Klasik ve özel boyutlarda tam renkli iç reklam panelleri", items: ["Küçük (26cm)","Orta (32cm)","Büyük (40cm)","Aile (50cm)"] },
+        { name: "Burger & Wrap Kutuları", emoji: "🍔", desc: "Kapak içinde reklam alanı olan sağlam ambalaj", items: ["Burger Kutusu","Wrap Kutusu","Snack Kutusu","Menü Kutusu"] },
+        { name: "Kağıt Poşet & Sarma", emoji: "🥡", desc: "Yerel reklamlı yağ geçirmez kağıt sarma ve poşetler", items: ["Sandviç Sarma","Patates Poşeti","Paket Poşeti","Deli Kağıdı"] },
+        { name: "Özel Çözümler", emoji: "✨", desc: "Markanız için özel tasarlanmış reklam entegrasyonlu ambalaj", items: ["Özel Baskı","Marka Renkleri","Özel Boyutlar","Eko Malzemeler"] },
+      ],
+      galleryTitle: "Nasıl Görünüyor",
+      galleryItems: [
+        { emoji: "📦", label: "Kutu Dışı", desc: "Restoran için temiz, profesyonel marka tasarımı" },
+        { emoji: "📰", label: "Kapak İçi Reklam", desc: "Kutu açıldığında görünen tam renkli yerel reklam" },
+        { emoji: "🎯", label: "QR & Kuponlar", desc: "Takip edilebilir QR kodları ve indirim kuponları" },
+        { emoji: "♻️", label: "Çevre Dostu", desc: "%100 geri dönüştürülebilir, FSC sertifikalı malzemeler" },
+      ],
+    },
+    rules: {
+      title: "✅ Etik Reklam Politikamız", subtitle: "Restoranları koruruz ve reklamcılığı adil, ilgili ve yerel tutarız.",
+      allowTitle: "✅ İZİN VERİYORUZ:", allowItems: ["Teslimat bölgesindeki yerel işletmeler","Rakip olmayan kategoriler (başka gıda işletmesi yok)","Aile dostu, etik ürün ve hizmetler","Topluma değer katan işletmeler"],
+      denyTitle: "❌ ASLA İZİN VERMİYORUZ:", denyItems: ["Rakip restoranlar veya gıda işletmeleri","Ulusal zincirler veya yerel olmayan şirketler","Uygunsuz veya saldırgan içerik","Kumar, alkol veya tütün reklamcılığı"],
+      trustQuote: '"Restoranlar, reklamverenler ve topluluklar arasında güven inşa ediyoruz."',
+    },
+    cta: "🟢 Konuşalım — info@madbud.dk",
+    footer: "MadBud.dk © 2026 — Akıllı Ambalaj, Daha Akıllı Reklam",
+  },
+};
+
+let lang = 'en';
+let tab = 'overview';
+const tabKeys = ['overview','restaurant','advertiser','products','rules'];
+const tabEmojis = { overview:'⚙️', restaurant:'🍕', advertiser:'📢', products:'📸', rules:'✅' };
+const svgCheck = `<svg class="icon-check" viewBox="0 0 24 24" width="18" height="18"><circle cx="12" cy="12" r="10" fill="#27AE60" opacity="0.15"/><polyline points="7,12 10.5,15.5 17,9" fill="none" stroke="#27AE60" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const svgCross = `<svg class="icon-cross" viewBox="0 0 24 24" width="18" height="18"><circle cx="12" cy="12" r="10" fill="#E74C3C" opacity="0.15"/><line x1="8" y1="8" x2="16" y2="16" stroke="#E74C3C" stroke-width="2.5" stroke-linecap="round"/><line x1="16" y1="8" x2="8" y2="16" stroke="#E74C3C" stroke-width="2.5" stroke-linecap="round"/></svg>`;
+const svgArrow = (c) => `<svg viewBox="0 0 40 60" width="28" height="42"><line x1="20" y1="5" x2="20" y2="48" stroke="${c}" stroke-width="3" stroke-linecap="round"/><polyline points="10,38 20,52 30,38" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const svgPizzaBox = `<svg viewBox="0 0 120 120" width="90" height="90"><rect x="15" y="40" width="90" height="60" rx="6" fill="#D4A574" stroke="#8B6914" stroke-width="2.5"/><polygon points="15,40 30,15 105,15 105,40" fill="#E8C9A0" stroke="#8B6914" stroke-width="2.5"/><line x1="105" y1="15" x2="105" y2="40" stroke="#8B6914" stroke-width="2.5"/><circle cx="60" cy="70" r="22" fill="#E74C3C" opacity="0.85"/><circle cx="52" cy="64" r="3.5" fill="#F4D03F"/><circle cx="68" cy="74" r="3" fill="#F4D03F"/><circle cx="58" cy="78" r="2.8" fill="#F4D03F"/><circle cx="66" cy="62" r="3.2" fill="#2ECC71" opacity="0.7"/><circle cx="54" cy="72" r="2.5" fill="#2ECC71" opacity="0.7"/><text x="60" y="30" text-anchor="middle" font-size="9" font-weight="bold" fill="#8B6914">PIZZA</text></svg>`;
+const svgAdBox = `<svg viewBox="0 0 120 120" width="90" height="90"><rect x="10" y="20" width="100" height="80" rx="5" fill="#D4A574" stroke="#8B6914" stroke-width="2"/><rect x="20" y="30" width="80" height="60" rx="3" fill="#FFF8E7" stroke="#C9A86C" stroke-width="1.5"/><rect x="28" y="38" width="64" height="14" rx="2" fill="#3498DB" opacity="0.85"/><text x="60" y="49" text-anchor="middle" font-size="8" font-weight="bold" fill="white">LOCAL AD</text><rect x="28" y="58" width="30" height="24" rx="2" fill="#E8E8E8"/><text x="43" y="72" text-anchor="middle" font-size="7" fill="#666">🧁</text><rect x="62" y="58" width="30" height="8" rx="1" fill="#DDD"/><rect x="62" y="70" width="25" height="5" rx="1" fill="#DDD"/><rect x="62" y="78" width="20" height="5" rx="1" fill="#DDD"/><text x="60" y="105" text-anchor="middle" font-size="7" fill="#8B6914" font-weight="bold">AD INSIDE ↑</text></svg>`;
+
+function render() {
+  const t = T[lang];
+  const rtl = !!t.rtl;
+  document.body.className = rtl ? 'rtl' : '';
+  document.documentElement.lang = lang;
+  document.documentElement.dir = rtl ? 'rtl' : 'ltr';
+
+  const winColors = ['#3498DB','#27AE60','#F7B731'];
+  const emojiFlow = rtl ? '👀 ← 🍕 ← 📦' : '📦 → 🍕 → 👀';
+
+  let html = '';
+
+  // Lang bar
+  html += '<div class="lang-bar">';
+  ['en','da','de','ar','tr'].forEach(l => {
+    html += `<button class="lang-btn ${l===lang?'active':''}" onclick="setLang('${l}')">${T[l].flag} ${T[l].label}</button>`;
+  });
+  html += '</div>';
+
+  // Header
+  html += `<div class="header">
+    <div class="badge">🟢 MadBud.dk</div>
+    <h1 class="tagline">${t.tagline}</h1>
+    <p class="subtitle">${t.subtitle}</p>
+  </div>`;
+
+  // Tabs
+  html += '<div class="tab-bar">';
+  tabKeys.forEach(k => {
+    html += `<button class="tab-btn ${k===tab?'active':''}" onclick="setTab('${k}')">${tabEmojis[k]} ${t.tabs[k]}</button>`;
+  });
+  html += '</div>';
+
+  html += '<div class="content">';
+
+  // OVERVIEW
+  if (tab === 'overview') {
+    const o = t.overview;
+    html += `<div class="view"><div class="flow">
+      <div class="flow-box gold">
+        <div style="font-size:36px;margin-bottom:8px">📦</div>
+        <h3 style="color:#F7B731;font-size:18px;margin:0 0 6px;font-weight:700">MadBud.dk</h3>
+        <p style="color:#8B949E;font-size:13px;margin:0;line-height:1.4;white-space:pre-line">${o.centerDesc}</p>
+      </div>
+      <div class="arrows-row">
+        <div class="arrow-col">${svgArrow('#3498DB')}<span style="font-size:10px;color:#3498DB;font-weight:600">${o.arrowLeft}</span></div>
+        <div class="arrow-col">${svgArrow('#27AE60')}<span style="font-size:10px;color:#27AE60;font-weight:600">${o.arrowRight}</span></div>
+      </div>
+      <div class="flow-row">
+        <div class="flow-half blue">
+          <div style="font-size:32px;margin-bottom:6px">🍕</div>
+          <h3 style="color:#3498DB;font-size:16px;margin:0 0 6px;font-weight:700">${o.restaurantTitle}</h3>
+          <p style="color:#8B949E;font-size:12px;margin:0;line-height:1.4">${o.restaurantDesc[0]}<strong style="color:#3498DB">${o.restaurantDesc[1]}</strong>${o.restaurantDesc[2]}</p>
+        </div>
+        <div class="flow-half green">
+          <div style="font-size:32px;margin-bottom:6px">🏪</div>
+          <h3 style="color:#27AE60;font-size:16px;margin:0 0 6px;font-weight:700">${o.advertiserTitle}</h3>
+          <p style="color:#8B949E;font-size:12px;margin:0;line-height:1.4">${o.advertiserDesc[0]}<strong style="color:#27AE60">${o.advertiserDesc[1]}</strong>${o.advertiserDesc[2]}</p>
+        </div>
+      </div>
+      <div style="margin-top:8px">${svgArrow('#9B59B6')}</div>
+      <div class="flow-box purple" style="max-width:350px;padding:16px 28px">
+        <div style="font-size:28px;margin-bottom:4px">😊</div>
+        <h3 style="color:#9B59B6;font-size:15px;margin:0 0 4px;font-weight:700">${o.customerTitle}</h3>
+        <p style="color:#8B949E;font-size:12px;margin:0;line-height:1.4">${o.customerDesc[0]}<strong style="color:#9B59B6">${o.customerDesc[1]}</strong>${o.customerDesc[2]}</p>
+      </div>
+    </div>
+    <div class="win-strip">${o.winWin.map((w,i) => `<div class="win-item"><div style="font-size:22px">${w.emoji}</div><div style="font-size:12px;font-weight:600;color:${winColors[i]};margin-top:4px">${w.text}</div></div>`).join('')}</div></div>`;
+  }
+
+  // RESTAURANT
+  if (tab === 'restaurant') {
+    const r = t.restaurant;
+    html += `<div class="view"><div class="card card-blue">
+      <h2 style="color:#3498DB;font-size:22px;margin:0 0 6px;font-weight:700">${r.title}</h2>
+      <p style="color:#C9D1D9;font-size:14px;margin-bottom:20px;line-height:1.5">${r.subtitle}</p>
+      <div class="compare">
+        <div class="compare-box red">
+          <div style="font-size:11px;color:#E74C3C;font-weight:700;letter-spacing:1px;margin-bottom:8px">${r.before}</div>
+          <div style="display:flex;justify-content:center;margin-bottom:8px">${svgPizzaBox}</div>
+          <div style="font-size:26px;font-weight:800;color:#E74C3C">${r.beforeLabel}</div>
+          <div style="font-size:12px;color:#8B949E">${r.beforeDesc}</div>
+        </div>
+        <div class="compare-box green">
+          <div style="font-size:11px;color:#27AE60;font-weight:700;letter-spacing:1px;margin-bottom:8px">${r.after}</div>
+          <div style="display:flex;justify-content:center;margin-bottom:8px">${svgAdBox}</div>
+          <div style="font-size:26px;font-weight:800;color:#27AE60">${r.afterLabel}</div>
+          <div style="font-size:12px;color:#8B949E">${r.afterDesc}</div>
+        </div>
+      </div>
+      <div class="check-list">
+        <div style="font-size:13px;font-weight:700;color:#3498DB;margin-bottom:10px">${r.whyTitle}</div>
+        ${r.whyItems.map(i => `<div class="check-item">${svgCheck}<span>${i}</span></div>`).join('')}
+      </div>
+    </div></div>`;
+  }
+
+  // ADVERTISER
+  if (tab === 'advertiser') {
+    const a = t.advertiser;
+    html += `<div class="view"><div class="card card-green">
+      <h2 style="color:#27AE60;font-size:22px;margin:0 0 6px;font-weight:700">${a.title}</h2>
+      <p style="color:#C9D1D9;font-size:14px;margin-bottom:20px;line-height:1.5">${a.subtitle}</p>
+      <div class="moment-box">
+        <div style="font-size:44px;margin-bottom:8px">${emojiFlow}</div>
+        <p style="font-size:14px;color:#27AE60;font-weight:600;margin:0 0 4px">${a.momentTitle}</p>
+        <p style="font-size:12px;color:#8B949E;margin:0">${a.momentDesc}</p>
+      </div>
+      <div style="font-size:13px;font-weight:700;color:#27AE60;margin-bottom:10px">${a.whyTitle}</div>
+      ${a.whyItems.map(i => `<div class="check-item">${svgCheck}<span>${i}</span></div>`).join('')}
+      <div class="ideal-box">
+        <div style="font-size:12px;font-weight:700;color:#F7B731;margin-bottom:6px">${a.idealTitle}</div>
+        <div class="biz-tags">${a.idealBiz.map(b => `<span class="biz-tag">${b}</span>`).join('')}</div>
+      </div>
+    </div></div>`;
+  }
+
+  // PRODUCTS
+  if (tab === 'products') {
+    const p = t.products;
+    html += `<div class="view"><div class="card card-orange">
+      <h2 style="color:#E67E22;font-size:22px;margin:0 0 6px;font-weight:700">${p.title}</h2>
+      <p style="color:#C9D1D9;font-size:14px;margin-bottom:24px;line-height:1.5">${p.subtitle}</p>
+      <div class="product-grid">${p.categories.map(c => `
+        <div class="product-card">
+          <div style="font-size:32px;margin-bottom:8px">${c.emoji}</div>
+          <h3 style="color:#E67E22;font-size:15px;margin:0 0 6px;font-weight:700">${c.name}</h3>
+          <p style="color:#8B949E;font-size:12px;margin:0 0 12px;line-height:1.4">${c.desc}</p>
+          <div class="product-tags">${c.items.map(i => `<span class="product-tag">${i}</span>`).join('')}</div>
+        </div>`).join('')}</div>
+      <div class="gallery-wrap">
+        <h3 style="color:#F7B731;font-size:16px;margin:0 0 16px;font-weight:700;text-align:center">${p.galleryTitle}</h3>
+        <div class="gallery-grid">${p.galleryItems.map(g => `
+          <div class="gallery-item">
+            <div class="gallery-icon">${g.emoji}</div>
+            <div style="font-size:13px;font-weight:700;color:#E6EDF3;margin-bottom:4px">${g.label}</div>
+            <div style="font-size:11px;color:#8B949E;line-height:1.3">${g.desc}</div>
+          </div>`).join('')}</div>
+        <p style="text-align:center;margin-top:16px;font-size:11px;color:#484F58;font-style:italic">
+<img src="./closedpizza.png" alt="" srcset="" width="100%"><img src="./openbox.png" alt="" srcset="" width="100%"></p>
+      </div>
+    </div></div>`;
+  }
+
+  // RULES
+  if (tab === 'rules') {
+    const r = t.rules;
+    html += `<div class="view"><div class="card card-yellow">
+      <h2 style="color:#F7B731;font-size:22px;margin:0 0 6px;font-weight:700">${r.title}</h2>
+      <p style="color:#C9D1D9;font-size:14px;margin-bottom:20px;line-height:1.5">${r.subtitle}</p>
+      <div style="font-size:13px;font-weight:700;color:#27AE60;margin-bottom:10px">${r.allowTitle}</div>
+      ${r.allowItems.map(i => `<div class="check-item">${svgCheck}<span>${i}</span></div>`).join('')}
+      <div style="font-size:13px;font-weight:700;color:#E74C3C;margin-bottom:10px;margin-top:18px">${r.denyTitle}</div>
+      ${r.denyItems.map(i => `<div class="check-item">${svgCross}<span>${i}</span></div>`).join('')}
+      <div class="trust-box">
+        <div style="font-size:20px;margin-bottom:4px">🤝</div>
+        <div style="font-size:13px;color:#9B59B6;font-weight:600">${r.trustQuote}</div>
+      </div>
+    </div></div>`;
+  }
+
+  html += '</div>';
+
+  // Footer
+  html += `<div class="footer">
+    <button class="cta-btn">${t.cta}</button>
+    <p style="font-size:11px;color:#484F58;margin-top:10px">${t.footer}</p>
+  </div>`;
+
+  document.body.innerHTML = html;
+}
+
+function setLang(l) { lang = l; render(); }
+function setTab(t) { tab = t; render(); }
+
+render();
+</script>
+</body>
+</html>
